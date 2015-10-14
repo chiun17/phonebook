@@ -28,18 +28,15 @@
 entry *findName(char lastname[], entry *pHead);
 entry *append(char lastName[], entry *e);
 
-typedef unsigned int hashIndex;
-typedef struct __PHONE_BOOK_HASH_TABLE {
-    unsigned int tableSize;
-    entry **list;
-} hashTable;
+        typedef struct __hashtable{
+            int size;
+            struct __lastName_entry **table;
+        } hashtable;
 
 
-hashTable *createTable(int tableSize);
-entry *findName_hash(char *key,hashTable *ht);
-int append_hash(char *key, hashTable *ht);
-hashIndex hash_(char *key ,hashTable *ht);
-
-
-
+hashtable *ht_create(int size);
+entry *ht_newspir(char *key);
+int ht_hash(hashtable *hashtable,char *key);
+void ht_append(hashtable *hashtable , char *key);
+void ht_findName(hashtable *hashtable , char *key);
 #endif

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include "phonebook_opt.h"
 
 /* FILL YOUR OWN IMPLEMENTATION HERE! */
@@ -25,56 +26,102 @@ entry *append(char lastName[], entry *e)
 }
 
 
-
-hashTable *createTable(int tableSize)
-{
-    hashTable *ht =NULL;
+hashtable *ht_create(int size){
+    hashtable *hashtable;
     int i;
+    if( size < 1 ) return NULL;
 
-    for(i=0;i<tableSize;i++){
-        ht->list[i]=NULL;
+    if(  (hashtable = malloc( sizeof(hashtable))) == NULL) {
+        return NULL;
     }
+    if( ( hashtable->table = malloc (sizeof(entry *) * size ) )==NULL){
+        return NULL;
+    }
+for( i=0;i<size ;i++){
+        hashtable->table[i]=NULL;
+    }
+    
+    hashtable->size = size ;
 
-    ht->tableSize = tableSize;
-    return ht;
+    return hashtable;
 }
 
-entry *findName_hash(char *key,hashTable *ht)
-{
-    entry *lne;
-    hashIndex index = hash_(key,ht);
 
-    for(lne=ht->list[index];lne!=NULL;lne=lne->pNext){
-        if(strcasecmp(key,lne->lastName)==0){
-        return lne;
+int ht_hash(hashtable *hashtable , char *key){
+        unsigned long int hashval;
+        int i=0;
+
+    while(hashval < ULONG_MAX && i < strlen (key) ){
+        hashval = hashval << 8 ;
+        hashval += key[i];
+        i++;
+    }
+        return hashval % hashtable->size;
+
+}
+
+
+entry *ht_newpair (char *key){
+        entry * newpair;
+
+        if(  (newpair= malloc (sizeof(entry))) == NULL   ){
+                return NULL;        
         }
-    }
 
-    return NULL;
+        if((strcpy(newpair->lastName,key)) == NULL ){
+                return NULL;
+        }
+        
+        newpair->pNext = NULL;
+        return newpair;
 }
 
 
-int append_hash(char *key,hashTable *ht)
-{
-    hashIndex index = hash_(key,ht);
-    entry *entry_;
+void ht_append(hashtable *hashtable , char *key){
+        int bin = NULL;
+        entry *lastPair = NULL;
+        entry *next = NULL;
+        entry *newpair=NULL;
 
-    if((entry_ = (entry *)malloc (sizeof(entry)))==NULL){
-        return 2;
-    }
+        bin = ht_hash(hashtable , key);
+        
+        next = hashtable->table[ bin ];
 
-    strcpy(entry_->lastName, key);
-    entry_->pNext = ht->list[index];
-    ht->list[index] = entry_;
-    return 0;
+        while (next != NULL && next->lastName != NULL && strcmp(next->lastName , key) >0){
+            lastPair = next ;
+            next = next->pNext;
+        }
+
+            newpair = ht_newpair(key);
+        if( next == hashtable->table[ bin ]){
+            newpair-> pNext = next;      
+            hashtable->table[ bin ] = newpair;
+        }
+        else if (next == NULL){
+            lastPair->pNext = newpair;
+        }
+        else{
+            newpair->pNext = next ;
+            lastPair->pNext = newpair;
+        }
 }
 
 
-hashIndex hash_(char *key, hashTable *ht){
+void ht_findName(hashtable *hashtable ,char *key){
+        int bin = 0;
+        entry *pair;
+        bin = ht_hash(hashtable , key);
 
-    unsigned int hashVal = 0;
-    while(*key != '\0'){
-    hashVal = (hashVal << 5) + *key++;
-    }
-    return hashVal % ht->tableSize;
+        pair = hashtable->table[ bin ];
+
+        while( strcmp(pair->lastName,key) >0 ){
+            pair = pair->pNext;
+        }
+
+        if( strcmp(pair->lastName,key)!=0){
+            printf("%s is not found\n",key);
+        }
+        else{
+            printf("%s is found\n",key);   
+        }
 }
