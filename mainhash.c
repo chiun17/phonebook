@@ -36,20 +36,15 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-
-    int tableSize = 42737;
-    hashTable *ht = createTable(tableSize); 
-    printf("hash table Size (prime number): %d\n",tableSize);
-
-
     /* build the entry */
-    entry *pHead, *e;
+    entry *pHead;
     pHead = (entry *) malloc(sizeof(entry));
     printf("size of entry : %lu bytes\n", sizeof(entry));
-    e = pHead;
-    e->pNext = NULL;
 
-    
+
+    //create hashtable
+    hashtable *hashtable = ht_create(65536); 
+        
 
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
@@ -60,30 +55,26 @@ int main(int argc, char *argv[])
             i++;
         line[i - 1] = '\0';
         i = 0;
-        append_hash(line, ht);
+        
+        //add data
+        ht_append(hashtable , line);
     }
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time1 = diff_in_second(start, end);
 
     /* close file as soon as possible */
     fclose(fp);
-
-    e = pHead;
-
     /* the givn last name to find */
-    char input[MAX_LAST_NAME_SIZE] = "zyxel";
-    e = pHead;
+   char input[MAX_LAST_NAME_SIZE] = "zyxel";
 
-    assert(findName(input, e) &&
-           "Did you implement findName() in " IMPL "?");
-    assert(0 == strcmp(findName(input, e)->lastName, "zyxel"));
 
 #if defined(__GNUC__)
     __builtin___clear_cache((char *) pHead, (char *) pHead + sizeof(entry));
 #endif
     /* compute the execution time */
     clock_gettime(CLOCK_REALTIME, &start);
-    findName(input, e);
+    //find data
+    ht_findName(hashtable,input);
     clock_gettime(CLOCK_REALTIME, &end);
     cpu_time2 = diff_in_second(start, end);
 
@@ -95,3 +86,8 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+
+
+
+
